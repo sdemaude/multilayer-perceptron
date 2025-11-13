@@ -140,3 +140,38 @@ All feature values are recoded with four significant digits.
 8. Missing attribute values: none
 
 9. Class distribution: 357 benign, 212 malignant
+
+
+
+|   #   |   Nom de la colonne                   | Description                      			   |
+| :---: | :------------------------------------ | :------------------------------------------- |
+|   3   | `mean_radius`                         | Rayon moyen                                  |
+|   4   | `mean_texture`                        | Texture moyenne                              |
+|   5   | `mean_perimeter`                      | Périmètre moyen                              |
+|   6   | `mean_area`                           | Aire moyenne                                 |
+|   7   | `mean_smoothness`                     | Lissage moyen                                |
+|   8   | `mean_compactness`                    | Compacité moyenne                            |
+|   9   | `mean_concavity`                      | Concavité moyenne                            |
+|   10  | `mean_concave_points`                 | Points concaves moyens                       |
+|   11  | `mean_symmetry`                       | Symétrie moyenne                             |
+|   12  | `mean_fractal_dimension`              | Dimension fractale moyenne                   |
+|   13  | `radius_se`                           | Erreur standard du rayon                     |
+|   14  | `texture_se`                          | Erreur standard de la texture                |
+|   15  | `perimeter_se`                        | Erreur standard du périmètre                 |
+|   16  | `area_se`                             | Erreur standard de l’aire                    |
+|   17  | `smoothness_se`                       | Erreur standard du lissage                   |
+|   18  | `compactness_se`                      | Erreur standard de la compacité              |
+|   19  | `concavity_se`                        | Erreur standard de la concavité              |
+|   20  | `concave_points_se`                   | Erreur standard des points concaves          |
+|   21  | `symmetry_se`                         | Erreur standard de la symétrie               |
+|   22  | `fractal_dimension_se`                | Erreur standard de la dimension fractale     |
+|   23  | `worst_radius`                        | Plus grand rayon (moyenne des 3 plus grands) |
+|   24  | `worst_texture`                       | Plus grande texture                          |
+|   25  | `worst_perimeter`                     | Plus grand périmètre                         |
+|   26  | `worst_area`                          | Plus grande aire                             |
+|   27  | `worst_smoothness`                    | Lissage maximal                              |
+|   28  | `worst_compactness`                   | Compacité maximale                           |
+|   29  | `worst_concavity`                     | Concavité maximale                           |
+|   30  | `worst_concave_points`                | Points concaves maximaux                     |
+|   31  | `worst_symmetry`                      | Symétrie maximale                            |
+|   32  | `worst_fractal_dimension`             | Dimension fractale maximale                  |
