@@ -1,77 +1,16 @@
 import argparse
-import numpy as np
 import pandas as pd
-import matplotlib as mpl
-import matplotlib.cm as cm
-import matplotlib.pyplot as plt
 
-from itertools import combinations
-from pandas.plotting import scatter_matrix
-from scipy.stats import wasserstein_distance
+from visualization import data_visualization
+from separation import data_split
+from training import deep_neural_network
 
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('-v', '--visualization', help='Display data visualization', action='store_true')
-
-
-def wasserstein(groups, features):
-    wasserstein_score = pd.DataFrame(columns=features, dtype=float)
-    for (nameA, groupA), (nameB, groupB) in combinations(groups, 2):
-        row = pd.Series(index=features)
-        for group in features:
-            dist = wasserstein_distance(groupA[group].dropna(), groupB[group].dropna())
-            row[group] = dist
-        wasserstein_score = pd.concat([wasserstein_score, row.to_frame().T], ignore_index=True)
-    
-    return wasserstein_score.mean()
-
-
-def wasserstein_plot(groups, features):
-    fig, ax = plt.subplots(figsize=(15, 10))
-    plt.subplots_adjust(top=0.9, bottom=0.25)
-
-    values = wasserstein(groups, features).values
-
-    ax.set(title='Mean Wasserstein Distance per Groups per Features',
-           ylabel='Mean Wasserstein Distance', xlabel='Features')
-
-    cmap = mpl.colormaps['summer']
-    norm = (values - values.min()) / (values.max() - values.min())
-    colors = cmap(norm)
-
-    bars = ax.bar(features, values, color=colors)
-
-    for bar, h in zip(bars, values):
-        ax.annotate(f'{h:.2f}', (bar.get_x() + bar.get_width() / 2, h), ha='center', va='bottom')
-
-    ax.tick_params(axis='x', rotation=80)
-
-    plt.draw()
-    plt.show()
-
-
-def pair_plot(df, features):
-    # Sélection des 6 features avec la plus grande distance de Wasserstein
-    features = wasserstein(df.groupby('diagnosis'), features).sort_values(ascending=False).index[:6].tolist()
-
-    # Création du pair plot
-    scatter_matrix(
-        df[features + ['diagnosis']],
-        figsize=(15, 10),
-        diagonal='kde',
-        color=df['diagnosis'].map({'B': 'darkseagreen', 'M': 'orangered'})
-    )
-
-    plt.suptitle('Pair plot des features clefs du dataset', y=1.02)
-    plt.show()
-
-
-def data_visualization(df):
-    # Affichage du graphique Wasserstein
-    wasserstein_plot(df.groupby('diagnosis'), df.drop(columns=['diagnosis', 'id']).columns)
-
-    # Affichage du pair plot
-    pair_plot(df, df.drop(columns=['id', 'diagnosis']).columns)
+parser.add_argument('-s', '--separation', help='Separate the dataset into training and testing sets', action='store_true')
+parser.add_argument('-t', '--training', help='Train the model', action='store_true')
+parser.add_argument('-p', '--prediction', help='Make predictions with the trained model', action='store_true')
 
 
 def data_preparation():
@@ -97,17 +36,48 @@ def main():
 
     if parser.parse_args().visualization:
         data_visualization(df)
-    
+
+    if parser.parse_args().separation:
+        train, test = data_split(df)
+
+        # Sauvegarde des datasets
+        train.to_csv('train.csv', index=False)
+        test.to_csv('test.csv', index=False)
+
+    if parser.parse_args().training:
+        if 'train.csv' not in pd.io.common.get_handle('train.csv', 'r').handle.name:
+            print("Training dataset 'train.csv' not found. Please run the separation step first.")
+            return
+        
+        train = pd.read_csv('train.csv')
+
+        # Normalisation des donnees
+        X = train.drop(columns=['id', 'diagnosis']).T.to_numpy()
+        y = train['diagnosis'].map({'M': 1, 'B': 0}).to_numpy().reshape(1, -1)
+
+        deep_neural_network(X, y,
+            hidden_layers = (16, 16, 16),
+            learning_rate = 0.001,
+            n_iter = 3000
+        )
+
+    if parser.parse_args().prediction:
+        pass
+
+
     # TODO:
-    # Creer un programme pour separer le dataset en deux parties (entrainement et validation)
-        # Separer les données en train et test (80/20)
+
     # Crer un programme d'entrainement
+        # Vectoriser les donnees
         # Implementer la fonction d'activation 'softmax' sur la couche de sortie
         # Implementer deux 'learning curve graphs' afficher a la fin de l'entrainement
+
     # Afficher les courbes d'apprentissage
     # Afficher les metrics d'entrainement et de validation a chaque epoch pour visualiser les performances du model
+    
     # Crer un programme de prediction
     # Ajouter les arguments du programmes : python train.py --layer 24 24 24 --epochs 84 --loss categoricalCrossEntropy --batch_size 8 --learning_rate 0.0314
+
 
 if __name__== '__main__':
     main()
