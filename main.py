@@ -1,16 +1,34 @@
 import argparse
 import pandas as pd
-
+import numpy as np
 from visualization import data_visualization
 from separation import data_split
 from training import deep_neural_network
 
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('-v', '--visualization', help='Display data visualization', action='store_true')
-parser.add_argument('-s', '--separation', help='Separate the dataset into training and testing sets', action='store_true')
-parser.add_argument('-t', '--training', help='Train the model', action='store_true')
-parser.add_argument('-p', '--prediction', help='Make predictions with the trained model', action='store_true')
+subparsers = parser.add_subparsers(dest='command', required=True)
+
+# Visualize Command
+subparsers.add_parser('visualize', help='Display data visualization')
+
+# Separate Command
+subparsers.add_parser('split', help='Split the dataset into training and testing sets')
+
+# Train Command
+train_parser = subparsers.add_parser('train', help='Train the model')
+
+train_parser.add_argument('-l', '--layers', nargs='+', type=int)#, help='List of hidden layer sizes, default : ?')
+train_parser.add_argument('-e', '--epochs', type=int)
+train_parser.add_argument('-c', '--loss', type=str, choices=['categoricalCrossEntropy', 'binaryCrossEntropy'])
+train_parser.add_argument('-b', '--batch_size', type=int)
+train_parser.add_argument('-r', '--learning_rate', type=float)
+
+# Predict Command
+predict_parser = subparsers.add_parser('predict', help='Make predictions with the trained model')
+# predict_parser.add_argument('--input', type=str, required=True)
+
+args = parser.parse_args()
 
 
 def data_preparation():
@@ -31,52 +49,53 @@ def data_preparation():
     return df
 
 
+def to_one_hot(y, num_classes=2):
+    m = y.shape[1]
+    Y = np.zeros((num_classes, m))
+    for i in range(m):
+        Y[y[0, i], i] = 1
+    return Y
+
+
 def main():
     df = data_preparation()
 
-    if parser.parse_args().visualization:
-        data_visualization(df)
+    match args.command:
+        case 'visualize':
+            data_visualization(df)
 
-    if parser.parse_args().separation:
-        train, test = data_split(df)
+        case 'split':
+            train, test = data_split(df)
 
-        # Sauvegarde des datasets
-        train.to_csv('train.csv', index=False)
-        test.to_csv('test.csv', index=False)
+            # Sauvegarde des datasets
+            train.to_csv('train.csv', index=False)
+            test.to_csv('test.csv', index=False)
 
-    if parser.parse_args().training:
-        if 'train.csv' not in pd.io.common.get_handle('train.csv', 'r').handle.name:
-            print("Training dataset 'train.csv' not found. Please run the separation step first.")
-            return
-        
-        train = pd.read_csv('train.csv')
+        case 'train':
+            if 'train.csv' not in pd.io.common.get_handle('train.csv', 'r').handle.name:
+                print("Training dataset 'train.csv' not found. Please run the separation step first.")
+                return
 
-        # Normalisation des donnees
-        X = train.drop(columns=['id', 'diagnosis']).T.to_numpy()
-        y = train['diagnosis'].map({'M': 1, 'B': 0}).to_numpy().reshape(1, -1)
+            train = pd.read_csv('train.csv')
 
-        deep_neural_network(X, y,
-            hidden_layers = (16, 16, 16),
-            learning_rate = 0.001,
-            n_iter = 3000
-        )
+            # Vectorisation des donnees
+            X = train.drop(columns=['id', 'diagnosis']).T.to_numpy()
+            y = train['diagnosis'].map({'M': 1, 'B': 0}).to_numpy().reshape(1, -1)
+            y = to_one_hot(y, num_classes=2)
 
-    if parser.parse_args().prediction:
-        pass
+            hidden_layer_size = tuple(args.layers) if args.layers else (16, 16, 16)
+            epochs = args.epochs if args.epochs else 3000
+            #loss = args.loss if args.loss else 'categoricalCrossEntropy'
+            #batch_size = args.batch_size if args.batch_size else 32
+            learning_rate = args.learning_rate if args.learning_rate else 0.01
 
+            #print(f"Hidden layers: {hidden_layer_size}")
+            #print(f"Learning rate: {learning_rate}")
 
-    # TODO:
+            deep_neural_network(X, y, hidden_layer_size, learning_rate, epochs)
 
-    # Crer un programme d'entrainement
-        # Vectoriser les donnees
-        # Implementer la fonction d'activation 'softmax' sur la couche de sortie
-        # Implementer deux 'learning curve graphs' afficher a la fin de l'entrainement
-
-    # Afficher les courbes d'apprentissage
-    # Afficher les metrics d'entrainement et de validation a chaque epoch pour visualiser les performances du model
-    
-    # Crer un programme de prediction
-    # Ajouter les arguments du programmes : python train.py --layer 24 24 24 --epochs 84 --loss categoricalCrossEntropy --batch_size 8 --learning_rate 0.0314
+        case 'predict':
+            pass
 
 
 if __name__== '__main__':
