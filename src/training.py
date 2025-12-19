@@ -16,36 +16,50 @@ def initialisation(dimensions):
     return parameters, L - 1
 
 
+def sigmoid(Z):
+    return 1 / (1 + np.exp(-Z))
+
+
+def softmax(Z):
+    Z_shifted = Z - np.max(Z, axis=0, keepdims=True)
+    exps = np.exp(Z_shifted)
+    return exps / np.sum(exps, axis=0, keepdims=True)
+
+
+
 def forward_propagation(X, parameters, layer_number):
-    
+
     activations = {'A0' : X}
 
     for l in range(1, layer_number + 1):
         # w * x + b
         Z = parameters['W' + str(l)].dot(activations['A' + str(l - 1)]) + parameters['b' + str(l)]
-        #if fin :
-        #    softmax
-        #else :
-            # Sigmoid
-        activations['A' + str(l)] = 1 / (1 + np.exp(-Z))
+        
+        if l == layer_number:
+            activations['A' + str(l)] = softmax(Z)
+        else:
+            activations['A' + str(l)] = sigmoid(Z)
 
     return activations
 
 
 def back_propagation(y, parameters, activations, layer_number):
-
-    m = y.shape[1]
-
-    # final layer activation
-    dZ = activations['A' + str(layer_number)] - y # plus ca du tout
+    
+    m = y.shape[0]
     gradients = {}
+
+    # output layer activation
+    A_L = activations['A' + str(layer_number)]
+    dZ = A_L.copy()
+    dZ[y, np.arange(m)] -= 1
+    #dZ = activations['A' + str(layer_number)] - y
 
     for l in reversed(range(1, layer_number + 1)): # end to start
         gradients['dW' + str(l)] = 1 / m * np.dot(dZ, activations['A' + str(l - 1)].T)
         gradients['db' + str(l)] = 1 / m * np.sum(dZ, axis=1, keepdims=True)
         if l > 1:
             # formula to go from layer l to layer l-1
-            dZ = np.dot(parameters['W' + str(l)].T, dZ) * activations['A' + str(l - 1)] * (1 - activations['A' + str(l - 1)]) # a recalculer en fonction de softmax
+            dZ = np.dot(parameters['W' + str(l)].T, dZ) * activations['A' + str(l - 1)] * (1 - activations['A' + str(l - 1)])
     
     return gradients
 
@@ -59,14 +73,19 @@ def update(gradients, parameters, learning_rate, layer_number):
     
     return parameters
 
-
+'''
 def log_loss(y, A):
     epsilon = 1e-15
     return 1 / len(y) * np.sum(-y * np.log(A + epsilon) - (1 - y) * np.log(1 - A + epsilon))
+'''
+'''
 
+'''
 
-def accuracy_score(y, y_predicted):
-    return np.mean(y_predicted == y)
+def sparse_categorical_cross_entropy(y, A):
+    epsilon = 1e-15
+    m = y.shape[0]
+    return -np.mean(np.log(A[y, np.arange(m)] + epsilon))
 
 
 # X = Features (matrix)
@@ -75,9 +94,10 @@ def accuracy_score(y, y_predicted):
 # X_val, y_val = validation set
 def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=20, min_delta=1e-4):
 
+    n_classes = np.max(y) + 1
     dimensions = list(hidden_layers)
     dimensions.insert(0, X.shape[0])    # set the input layer
-    dimensions.append(y.shape[0])       # set the output layer
+    dimensions.append(n_classes)        # set the output layer
     
     parameters, layer_number = initialisation(dimensions)
     
@@ -93,15 +113,15 @@ def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val
         parameters = update(gradients, parameters, learning_rate, layer_number)
 
         final_activation = activations['A' + str(layer_number)]
-        training_history[i, 0] = log_loss(y.flatten(), final_activation.flatten()) # pas forcement log loss ?
-        training_history[i, 2] = accuracy_score(y.flatten(), final_activation.flatten() >= 0.5)
+        training_history[i, 0] = sparse_categorical_cross_entropy(y, final_activation) # training loss
+        training_history[i, 2] = np.mean(np.argmax(final_activation, axis=0) == y) # training accuracy
 
         # validation step
         val_activations = forward_propagation(X_val, parameters, layer_number)
         val_final_activations = val_activations['A' + str(layer_number)]
 
-        training_history[i, 1] = log_loss(y_val.flatten(), val_final_activations.flatten())
-        training_history[i, 3] = accuracy_score(y_val.flatten(), val_final_activations.flatten() >= 0.5)
+        training_history[i, 1] = sparse_categorical_cross_entropy(y_val, val_final_activations) # val loss
+        training_history[i, 3] = np.mean(np.argmax(val_final_activations, axis=0) == y_val) # val accuracy
 
         # early stopping
         if training_history[i, 1] < best_val_loss - min_delta:
@@ -116,7 +136,13 @@ def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val
                 break
 
         if (i + 1) % 100 == 0:
-            print(f"Epoch {i + 1}/{epochs} - Loss: {training_history[i, 0]:.4f} - Val Loss: {training_history[i, 1]:.4f} - Accuracy: {training_history[i, 2]:.4f} - Val Accuracy: {training_history[i, 3]:.4f}")
+            print(
+                f"Epoch {i+1}/{epochs} - "
+                f"Loss: {training_history[i,0]:.4f} - "
+                f"Val Loss: {training_history[i,1]:.4f} - "
+                f"Accuracy: {training_history[i,2]:.4f} - "
+                f"Val Accuracy: {training_history[i,3]:.4f}"
+            )
 
     # save model params + training history
     np.save("model_params.npy", parameters)

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from visualization import data_visualization
 from separation import data_split
 from training import deep_neural_network
-from prediction import predict
+from prediction import predict_and_display, binary_cross_entropy
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from pathlib import Path
 
@@ -92,14 +92,15 @@ def load_dataset(file_name):
     return X, y
 
 def main():
-    df = data_preparation()
 
     match args.command:
 
         case 'visualize':
+            df = data_preparation()
             data_visualization(df)
 
         case 'split':
+            df = data_preparation()
             train, test = data_split(df)
 
             # save datasets
@@ -107,24 +108,30 @@ def main():
             test.to_csv('test.csv', index=False)
 
         case 'train':
+
             X, y = load_dataset('train.csv')
             X_val, y_val = load_dataset('test.csv')
 
-            hidden_layers = tuple(args.layers) if args.layers else (16, 16, 16)
-            epochs = args.epochs if args.epochs else 3000
-            #loss = args.loss if args.loss else 'CCE'
-            #batch_size = args.batch_size if args.batch_size else 32
+            y = y.reshape(-1)
+            y_val = y_val.reshape(-1)
+
+            hidden_layers = tuple(args.layers) if args.layers else (20, 20, 20)
+            epochs = args.epochs if args.epochs else 300
             learning_rate = args.learning_rate if args.learning_rate else 0.05
 
             training_history = deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val)
             display_plots(training_history)
 
         case 'predict':
-
             X, y = load_dataset('test.csv')
             parameters = np.load("model_params.npy", allow_pickle=True).item()
 
-            predictions = predict(X, parameters)
+            predictions, probabilities = predict_and_display(X, y, parameters)
+
+            # calculate loss
+            loss = binary_cross_entropy(y, probabilities)
+            print(f"Test Loss using BCE: {loss:.4f}")
+
 
             # confusion matrix
             cm = confusion_matrix(y.flatten(), predictions.flatten())
