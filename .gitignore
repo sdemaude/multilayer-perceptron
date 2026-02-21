@@ -2,3 +2,6 @@
 *.txt
 *.npy
 __pycache__/
+predictions.csv
+test.csv
+train.csv

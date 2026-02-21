@@ -104,8 +104,8 @@ def main():
             train, test = data_split(df)
 
             # save datasets
-            train.to_csv('train.csv', index=False)
-            test.to_csv('test.csv', index=False)
+            train.to_csv('datasets/train.csv', index=False)
+            test.to_csv('datasets/test.csv', index=False)
 
         case 'train':
 
@@ -115,11 +115,11 @@ def main():
             y = y.reshape(-1)
             y_val = y_val.reshape(-1)
 
-            hidden_layers = tuple(args.layers) if args.layers else (20, 20, 20)
-            epochs = args.epochs if args.epochs else 300
-            learning_rate = args.learning_rate if args.learning_rate else 0.05
+            hidden_layers = tuple(args.layers) if args.layers else (32, 32, 16)
+            epochs = args.epochs if args.epochs else 1000
+            learning_rate = args.learning_rate if args.learning_rate else 0.1
 
-            training_history = deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val)
+            training_history = deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=50)
             display_plots(training_history)
 
         case 'predict':
@@ -129,7 +129,7 @@ def main():
             predictions, probabilities = predict_and_display(X, y, parameters)
 
             # calculate loss
-            loss = binary_cross_entropy(y, probabilities)
+            loss = binary_cross_entropy(y, probabilities[1, :]) # use the probabilities of the positive class (malignant)
             print(f"Test Loss using BCE: {loss:.4f}")
 
 

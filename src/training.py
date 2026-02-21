@@ -11,7 +11,7 @@ def initialisation(dimensions):
     # set each parameter to a random value
     for l in range(1, L):
         parameters['W' + str(l)] = np.random.randn(dimensions[l], dimensions[l - 1])
-        parameters['b' + str(l)] = np.random.randn(dimensions[l], 1)
+        parameters['b' + str(l)] = np.zeros((dimensions[l], 1))
 
     return parameters, L - 1
 
