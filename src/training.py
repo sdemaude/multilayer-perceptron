@@ -41,7 +41,6 @@ def forward_propagation(X, parameters, layer_number):
 
 
 def back_propagation(y, parameters, activations, layer_number):
-    
     m = y.shape[0]
     gradients = {}
 
@@ -62,7 +61,6 @@ def back_propagation(y, parameters, activations, layer_number):
 
 
 def update(gradients, parameters, learning_rate, layer_number):
-
     for l in range(1, layer_number + 1):
         # new_weight = old_weight - learning_rate * slope
         parameters['W' + str(l)] = parameters['W' + str(l)] - learning_rate * gradients['dW' + str(l)] 
@@ -81,8 +79,7 @@ def sparse_categorical_cross_entropy(y, A):
 # y = Labels (vector)
 # hidden_layers = size of each layer (tuple)
 # X_val, y_val = validation set
-def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=20, min_delta=1e-4):
-
+def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=20, min_delta=1e-4, epochs_print=100):
     n_classes = np.max(y) + 1
     dimensions = list(hidden_layers)
     dimensions.insert(0, X.shape[0])    # set the input layer
@@ -124,7 +121,7 @@ def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val
                 parameters = best_parameters
                 break
 
-        if (i + 1) % 100 == 0:
+        if (i + 1) % epochs_print == 0:
             tqdm.write(
                 f"Epoch {i+1}/{epochs} - "
                 f"Loss: {training_history[i,0]:.4f} - "
@@ -133,8 +130,8 @@ def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val
                 f"Val Accuracy: {training_history[i,3]:.4f}"
             )
 
-    # save model params + training history
     np.save("model_params.npy", parameters)
     np.save("training_history.npy", training_history)
+    print("Model parameters and training history saved in training_history.npy and model_params.npy")
 
     return training_history

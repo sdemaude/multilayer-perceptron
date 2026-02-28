@@ -2,31 +2,32 @@ import argparse
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from pathlib import Path
+
 from visualization import data_visualization
 from separation import data_split
 from training import deep_neural_network
 from prediction import predict_and_display, binary_cross_entropy
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-from pathlib import Path
 
-# argument parser
-parser = argparse.ArgumentParser(description='')
-subparsers = parser.add_subparsers(dest='command', required=True)
 
-subparsers.add_parser('visualize', help='Display data visualization')
-subparsers.add_parser('split', help='Split the dataset into training and testing sets')
-train_parser = subparsers.add_parser('train', help='Train the model')
+def init_parser():
+    parser = argparse.ArgumentParser(description='')
+    subparsers = parser.add_subparsers(dest='command', required=True)
 
-train_parser.add_argument('-l', '--layers', nargs='+', type=int)
-train_parser.add_argument('-e', '--epochs', type=int)
-train_parser.add_argument('-c', '--loss', type=str, choices=['CCE', 'BCE'])
-train_parser.add_argument('-b', '--batch_size', type=int)
-train_parser.add_argument('-r', '--learning_rate', type=float)
+    subparsers.add_parser('visualize', help='Display data visualization')
+    subparsers.add_parser('split', help='Split the dataset into training and testing sets')
+    train_parser = subparsers.add_parser('train', help='Train the model')
 
-predict_parser = subparsers.add_parser('predict', help='Make predictions with the trained model')
-# predict_parser.add_argument('--input', type=str, required=True)
+    train_parser.add_argument('-l', '--layers', nargs='+', type=int)
+    train_parser.add_argument('-e', '--epochs', type=int)
+    train_parser.add_argument('-r', '--learning_rate', type=float)
+    train_parser.add_argument('--epochs_print', type=int)
 
-args = parser.parse_args()
+    subparsers.add_parser('predict', help='Make predictions with the trained model')
+
+    return parser.parse_args()
 
 
 def data_preparation():
@@ -87,6 +88,8 @@ def load_dataset(file_name):
 
 
 def main():
+    args = init_parser()
+
     match args.command:
         case 'visualize':
             df = data_preparation()
@@ -96,7 +99,6 @@ def main():
             df = data_preparation()
             train, test = data_split(df)
 
-            # save datasets
             train.to_csv('datasets/train.csv', index=False)
             test.to_csv('datasets/test.csv', index=False)
 
@@ -108,10 +110,11 @@ def main():
             y_val = y_val.reshape(-1)
 
             hidden_layers = tuple(args.layers) if args.layers else (48, 64)
-            epochs = args.epochs if args.epochs else 3000
             learning_rate = args.learning_rate if args.learning_rate else 0.1
+            epochs = args.epochs if args.epochs else 3000
+            epochs_print = args.epochs_print if args.epochs_print else 100
 
-            training_history = deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=50)
+            training_history = deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=50, epochs_print=epochs_print)
             display_plots(training_history)
 
         case 'predict':
