@@ -30,7 +30,7 @@ args = parser.parse_args()
 
 
 def data_preparation():
-    # Récupération du dataset et ajout des noms de colonnes
+    # Load the dataset and add column names
     DATA_PATH = Path(__file__).resolve().parent.parent / "datasets" / "data.csv"
 
     # TODO add error handling
@@ -46,7 +46,7 @@ def data_preparation():
         'worst_radius', 'worst_texture', 'worst_perimeter', 'worst_area', 'worst_smoothness',
         'worst_compactness', 'worst_concavity', 'worst_concave_points', 'worst_symmetry', 'worst_fractal_dimension']
 
-    # Normalisation du dataset
+    # Normalize the dataset
     for column in df.drop(columns=['id', 'diagnosis']).columns:
         df[column] = (df[column] - df[column].min()) / (df[column].max() - df[column].min())
     
@@ -54,7 +54,6 @@ def data_preparation():
 
 
 def display_plots(training_history):
-
     plt.figure(figsize=(12, 4))
 
     # Loss plot
@@ -75,21 +74,21 @@ def display_plots(training_history):
 
 
 def load_dataset(file_name):
-            
     DATA_PATH = Path(__file__).resolve().parent.parent / "datasets" / file_name
 
-    # TODO add error handling
-    #if not DATA_PATH.exists():
-    #    raise FileNotFoundError(f"Couldn't find the dataset file, please run the separation step first\n")
+    # add error handling
+    if not DATA_PATH.exists():
+        raise FileNotFoundError(f"Couldn't find the dataset file: {file_name}\n")
 
     dataset = pd.read_csv(DATA_PATH)
 
-    # Vectorisation des donnees
+    # Vectorize the data
     X = dataset.drop(columns=['id', 'diagnosis']).T.to_numpy()
     y = dataset['diagnosis'].map({'M': 1, 'B': 0}).to_numpy()
     y = y.reshape(1, y.shape[0])
 
     return X, y
+
 
 def main():
 
@@ -108,7 +107,6 @@ def main():
             test.to_csv('datasets/test.csv', index=False)
 
         case 'train':
-
             X, y = load_dataset('train.csv')
             X_val, y_val = load_dataset('test.csv')
 
