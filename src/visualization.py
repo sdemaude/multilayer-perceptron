@@ -44,10 +44,10 @@ def wasserstein_plot(groups, features):
 
 
 def pair_plot(df, features):
-    # Sélection des 6 features avec la plus grande distance de Wasserstein
+    # Select the 6 features with the largest Wasserstein distance
     features = wasserstein(df.groupby('diagnosis'), features).sort_values(ascending=False).index[:6].tolist()
 
-    # Création du pair plot
+    # Create the pair plot
     scatter_matrix(
         df[features + ['diagnosis']],
         figsize=(15, 10),
@@ -60,8 +60,8 @@ def pair_plot(df, features):
 
 
 def data_visualization(df):
-    # Affichage du graphique Wasserstein
+    # Display the Wasserstein plot
     wasserstein_plot(df.groupby('diagnosis'), df.drop(columns=['diagnosis', 'id']).columns)
 
-    # Affichage du pair plot
+    # Display the pair plot
     pair_plot(df, df.drop(columns=['id', 'diagnosis']).columns)
