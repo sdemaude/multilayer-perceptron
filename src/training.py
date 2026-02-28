@@ -2,7 +2,6 @@ from tqdm import tqdm
 import numpy as np
 
 def initialisation(dimensions):  
-    
     parameters = {}
     L = len(dimensions)
 
@@ -26,9 +25,7 @@ def softmax(Z):
     return exps / np.sum(exps, axis=0, keepdims=True)
 
 
-
 def forward_propagation(X, parameters, layer_number):
-
     activations = {'A0' : X}
 
     for l in range(1, layer_number + 1):
@@ -67,20 +64,12 @@ def back_propagation(y, parameters, activations, layer_number):
 def update(gradients, parameters, learning_rate, layer_number):
 
     for l in range(1, layer_number + 1):
-        # nouveau_poids = ancien_poids - learning_rate * pente
+        # new_weight = old_weight - learning_rate * slope
         parameters['W' + str(l)] = parameters['W' + str(l)] - learning_rate * gradients['dW' + str(l)] 
         parameters['b' + str(l)] = parameters['b' + str(l)] - learning_rate * gradients['db' + str(l)]
     
     return parameters
 
-'''
-def log_loss(y, A):
-    epsilon = 1e-15
-    return 1 / len(y) * np.sum(-y * np.log(A + epsilon) - (1 - y) * np.log(1 - A + epsilon))
-'''
-'''
-
-'''
 
 def sparse_categorical_cross_entropy(y, A):
     epsilon = 1e-15
@@ -113,15 +102,15 @@ def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val
         parameters = update(gradients, parameters, learning_rate, layer_number)
 
         final_activation = activations['A' + str(layer_number)]
-        training_history[i, 0] = sparse_categorical_cross_entropy(y, final_activation) # training loss
-        training_history[i, 2] = np.mean(np.argmax(final_activation, axis=0) == y) # training accuracy
+        training_history[i, 0] = sparse_categorical_cross_entropy(y, final_activation)  # training loss
+        training_history[i, 2] = np.mean(np.argmax(final_activation, axis=0) == y)      # training accuracy
 
         # validation step
         val_activations = forward_propagation(X_val, parameters, layer_number)
         val_final_activations = val_activations['A' + str(layer_number)]
 
         training_history[i, 1] = sparse_categorical_cross_entropy(y_val, val_final_activations) # val loss
-        training_history[i, 3] = np.mean(np.argmax(val_final_activations, axis=0) == y_val) # val accuracy
+        training_history[i, 3] = np.mean(np.argmax(val_final_activations, axis=0) == y_val)     # val accuracy
 
         # early stopping
         if training_history[i, 1] < best_val_loss - min_delta:
@@ -131,12 +120,12 @@ def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val
         else:
             wait += 1
             if wait >= patience:
-                print(f"\n Early stopping triggered at epoch {i}")
+                tqdm.write(f"\n Early stopping triggered at epoch {i}")
                 parameters = best_parameters
                 break
 
         if (i + 1) % 100 == 0:
-            print(
+            tqdm.write(
                 f"Epoch {i+1}/{epochs} - "
                 f"Loss: {training_history[i,0]:.4f} - "
                 f"Val Loss: {training_history[i,1]:.4f} - "

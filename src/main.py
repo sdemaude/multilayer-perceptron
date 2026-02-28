@@ -32,10 +32,8 @@ args = parser.parse_args()
 def data_preparation():
     # Load the dataset and add column names
     DATA_PATH = Path(__file__).resolve().parent.parent / "datasets" / "data.csv"
-
-    # TODO add error handling
-    #if not DATA_PATH.exists():
-    #    raise FileNotFoundError(f"Couldn't find the dataset file\n")
+    if not DATA_PATH.exists():
+        raise FileNotFoundError(f"Couldn't find the dataset file: data.csv\n")
 
     df = pd.read_csv(DATA_PATH, header=None)
     df.columns = ['id', 'diagnosis',
@@ -75,8 +73,6 @@ def display_plots(training_history):
 
 def load_dataset(file_name):
     DATA_PATH = Path(__file__).resolve().parent.parent / "datasets" / file_name
-
-    # add error handling
     if not DATA_PATH.exists():
         raise FileNotFoundError(f"Couldn't find the dataset file: {file_name}\n")
 
@@ -91,9 +87,7 @@ def load_dataset(file_name):
 
 
 def main():
-
     match args.command:
-
         case 'visualize':
             df = data_preparation()
             data_visualization(df)
@@ -129,7 +123,6 @@ def main():
             # calculate loss
             loss = binary_cross_entropy(y, probabilities[1, :]) # use the probabilities of the positive class (malignant)
             print(f"Test Loss using BCE: {loss:.4f}")
-
 
             # confusion matrix
             cm = confusion_matrix(y.flatten(), predictions.flatten())
