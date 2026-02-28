@@ -115,8 +115,8 @@ def main():
             y = y.reshape(-1)
             y_val = y_val.reshape(-1)
 
-            hidden_layers = tuple(args.layers) if args.layers else (32, 32, 16)
-            epochs = args.epochs if args.epochs else 1000
+            hidden_layers = tuple(args.layers) if args.layers else (48, 64)
+            epochs = args.epochs if args.epochs else 3000
             learning_rate = args.learning_rate if args.learning_rate else 0.1
 
             training_history = deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=50)
