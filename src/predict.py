@@ -1,13 +1,15 @@
-from training import forward_propagation
+from train import forward_propagation
 import numpy as np
 import pandas as pd
 
 
+# Calculate binary cross-entropy loss between true labels and predictions.
 def binary_cross_entropy(y, p):
         epsilon = 1e-15
         return -np.mean(y * np.log(p + epsilon) + (1 - y) * np.log(1 - p + epsilon))
 
 
+# Make predictions using forward propagation, print sample results, calculate accuracy, and save to a CSV file.
 def predict_and_display(X, y, parameters, class_names=['B', 'M']):
     
     L = len(parameters) // 2

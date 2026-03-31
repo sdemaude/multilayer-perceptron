@@ -7,6 +7,7 @@ from pandas.plotting import scatter_matrix
 from scipy.stats import wasserstein_distance
 
 
+# Calculate the average Wasserstein distance for pairs of groups per feature.
 def wasserstein(groups, features):
     wasserstein_score = pd.DataFrame(columns=features, dtype=float)
     for (nameA, groupA), (nameB, groupB) in combinations(groups, 2):
@@ -19,6 +20,7 @@ def wasserstein(groups, features):
     return wasserstein_score.mean()
 
 
+# Show a bar chart displaying the mean Wasserstein distance for each feature.
 def wasserstein_plot(groups, features):
     fig, ax = plt.subplots(figsize=(15, 10))
     plt.subplots_adjust(top=0.9, bottom=0.25)
@@ -43,6 +45,7 @@ def wasserstein_plot(groups, features):
     plt.show()
 
 
+# Generate a scatter matrix pair plot with the highest Wasserstein-scored features.
 def pair_plot(df, features):
     # Select the 6 features with the largest Wasserstein distance
     features = wasserstein(df.groupby('diagnosis'), features).sort_values(ascending=False).index[:6].tolist()
@@ -59,6 +62,7 @@ def pair_plot(df, features):
     plt.show()
 
 
+# Execute the overall visualization routine (Wasserstein and pair plots).
 def data_visualization(df):
     # Display the Wasserstein plot
     wasserstein_plot(df.groupby('diagnosis'), df.drop(columns=['diagnosis', 'id']).columns)

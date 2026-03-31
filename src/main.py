@@ -6,12 +6,13 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from pathlib import Path
 
-from visualization import data_visualization
-from separation import data_split
-from training import deep_neural_network
-from prediction import predict_and_display, binary_cross_entropy
+from visualize import data_visualization
+from split import data_split
+from train import deep_neural_network
+from predict import predict_and_display, binary_cross_entropy
 
 
+# Initialize and parse command-line arguments.
 def init_parser():
     parser = argparse.ArgumentParser(description='')
     subparsers = parser.add_subparsers(dest='command', required=True)
@@ -30,6 +31,7 @@ def init_parser():
     return parser.parse_args()
 
 
+# Load and normalize the main dataset, assigning column names.
 def data_preparation():
     # Load the dataset and add column names
     DATA_PATH = Path(__file__).resolve().parent.parent / "datasets" / "data.csv"
@@ -52,6 +54,7 @@ def data_preparation():
     return df
 
 
+# Display loss and accuracy plots from the training history.
 def display_plots(training_history):
     plt.figure(figsize=(12, 4))
 
@@ -72,6 +75,7 @@ def display_plots(training_history):
     plt.show()
 
 
+# Load a specific dataset file and prepare features (X) and labels (y).
 def load_dataset(file_name):
     DATA_PATH = Path(__file__).resolve().parent.parent / "datasets" / file_name
     if not DATA_PATH.exists():
@@ -87,6 +91,7 @@ def load_dataset(file_name):
     return X, y
 
 
+# Main entry point to handle commands: visualize, split, train, and predict.
 def main():
     args = init_parser()
 

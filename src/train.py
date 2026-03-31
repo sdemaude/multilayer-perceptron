@@ -1,6 +1,7 @@
 from tqdm import tqdm
 import numpy as np
 
+# Initialize model parameters randomly for all layers.
 def initialisation(dimensions):  
     parameters = {}
     L = len(dimensions)
@@ -15,16 +16,19 @@ def initialisation(dimensions):
     return parameters, L - 1
 
 
+# Calculate the sigmoid activation function.
 def sigmoid(Z):
     return 1 / (1 + np.exp(-Z))
 
 
+# Calculate the softmax activation function with shifted values for numerical stability.
 def softmax(Z):
     Z_shifted = Z - np.max(Z, axis=0, keepdims=True)
     exps = np.exp(Z_shifted)
     return exps / np.sum(exps, axis=0, keepdims=True)
 
 
+# Perform forward propagation to calculate activations for each layer.
 def forward_propagation(X, parameters, layer_number):
     activations = {'A0' : X}
 
@@ -40,6 +44,7 @@ def forward_propagation(X, parameters, layer_number):
     return activations
 
 
+# Perform back propagation to compute gradients for parameter updates.
 def back_propagation(y, parameters, activations, layer_number):
     m = y.shape[0]
     gradients = {}
@@ -60,6 +65,7 @@ def back_propagation(y, parameters, activations, layer_number):
     return gradients
 
 
+# Update weights and biases using computed gradients and a learning rate.
 def update(gradients, parameters, learning_rate, layer_number):
     for l in range(1, layer_number + 1):
         # new_weight = old_weight - learning_rate * slope
@@ -69,12 +75,14 @@ def update(gradients, parameters, learning_rate, layer_number):
     return parameters
 
 
+# Calculate sparse categorical cross-entropy loss.
 def sparse_categorical_cross_entropy(y, A):
     epsilon = 1e-15
     m = y.shape[0]
     return -np.mean(np.log(A[y, np.arange(m)] + epsilon))
 
 
+# Train a deep neural network, managing epochs, validation, and early stopping.
 # X = Features (matrix)
 # y = Labels (vector)
 # hidden_layers = size of each layer (tuple)
