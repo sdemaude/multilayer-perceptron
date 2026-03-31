@@ -11,11 +11,10 @@ def binary_cross_entropy(y, p):
 
 # Make predictions using forward propagation, print sample results, calculate accuracy, and save to a CSV file.
 def predict_and_display(X, y, parameters, class_names=['B', 'M']):
-    
     L = len(parameters) // 2
 
     # forward propagation
-    probabilities = forward_propagation(X, parameters, L)['A' + str(L)]
+    probabilities = forward_propagation(X, parameters, L)['A' + str(L)] # get the output layer activations (probabilities)
     predictions = np.argmax(probabilities, axis=0) # keep the one with highest probability
 
     # display results

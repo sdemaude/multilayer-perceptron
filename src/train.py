@@ -5,7 +5,6 @@ import numpy as np
 def initialisation(dimensions):  
     parameters = {}
     L = len(dimensions)
-
     np.random.seed(1)
 
     # set each parameter to a random value
@@ -53,7 +52,6 @@ def back_propagation(y, parameters, activations, layer_number):
     A_L = activations['A' + str(layer_number)]
     dZ = A_L.copy()
     dZ[y, np.arange(m)] -= 1
-    #dZ = activations['A' + str(layer_number)] - y
 
     for l in reversed(range(1, layer_number + 1)): # end to start
         gradients['dW' + str(l)] = 1 / m * np.dot(dZ, activations['A' + str(l - 1)].T)
@@ -68,7 +66,7 @@ def back_propagation(y, parameters, activations, layer_number):
 # Update weights and biases using computed gradients and a learning rate.
 def update(gradients, parameters, learning_rate, layer_number):
     for l in range(1, layer_number + 1):
-        # new_weight = old_weight - learning_rate * slope
+        # new weight = old weight - learning rate * slope
         parameters['W' + str(l)] = parameters['W' + str(l)] - learning_rate * gradients['dW' + str(l)] 
         parameters['b' + str(l)] = parameters['b' + str(l)] - learning_rate * gradients['db' + str(l)]
     
@@ -129,6 +127,7 @@ def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val
                 parameters = best_parameters
                 break
 
+        # print progress
         if (i + 1) % epochs_print == 0:
             tqdm.write(
                 f"Epoch {i+1}/{epochs} - "

@@ -19,21 +19,20 @@ def init_parser():
 
     subparsers.add_parser('visualize', help='Display data visualization')
     subparsers.add_parser('split', help='Split the dataset into training and testing sets')
-    train_parser = subparsers.add_parser('train', help='Train the model')
+    subparsers.add_parser('predict', help='Make predictions with the trained model')
 
+    train_parser = subparsers.add_parser('train', help='Train the model')
     train_parser.add_argument('-l', '--layers', nargs='+', type=int)
     train_parser.add_argument('-e', '--epochs', type=int)
     train_parser.add_argument('-r', '--learning_rate', type=float)
     train_parser.add_argument('--epochs_print', type=int)
-
-    subparsers.add_parser('predict', help='Make predictions with the trained model')
 
     return parser.parse_args()
 
 
 # Load and normalize the main dataset, assigning column names.
 def data_preparation():
-    # Load the dataset and add column names
+    # Load dataset and add column names
     DATA_PATH = Path(__file__).resolve().parent.parent / "datasets" / "data.csv"
     if not DATA_PATH.exists():
         raise FileNotFoundError(f"Couldn't find the dataset file: data.csv\n")
@@ -80,7 +79,6 @@ def load_dataset(file_name):
     DATA_PATH = Path(__file__).resolve().parent.parent / "datasets" / file_name
     if not DATA_PATH.exists():
         raise FileNotFoundError(f"Couldn't find the dataset file: {file_name}\n")
-
     dataset = pd.read_csv(DATA_PATH)
 
     # Vectorize the data
@@ -111,13 +109,14 @@ def main():
             X, y = load_dataset('train.csv')
             X_val, y_val = load_dataset('test.csv')
 
-            y = y.reshape(-1)
+            y = y.reshape(-1) # convert to a vector
             y_val = y_val.reshape(-1)
 
+            # set hyperparameters with defaults if not provided
             hidden_layers = tuple(args.layers) if args.layers else (48, 64)
             learning_rate = args.learning_rate if args.learning_rate else 0.1
             epochs = args.epochs if args.epochs else 3000
-            epochs_print = args.epochs_print if args.epochs_print else 100
+            epochs_print = args.epochs_print if args.epochs_print else 1
 
             training_history = deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=50, epochs_print=epochs_print)
             display_plots(training_history)
