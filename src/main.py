@@ -91,51 +91,55 @@ def load_dataset(file_name):
 
 # Main entry point to handle commands: visualize, split, train, and predict.
 def main():
-    args = init_parser()
+    try:
+        args = init_parser()
 
-    match args.command:
-        case 'visualize':
-            df = data_preparation()
-            data_visualization(df)
+        match args.command:
+            case 'visualize':
+                df = data_preparation()
+                data_visualization(df)
 
-        case 'split':
-            df = data_preparation()
-            train, test = data_split(df)
+            case 'split':
+                df = data_preparation()
+                train, test = data_split(df)
+    
+                train.to_csv('datasets/train.csv', index=False)
+                test.to_csv('datasets/test.csv', index=False)
+    
+            case 'train':
+                X, y = load_dataset('train.csv')
+                X_val, y_val = load_dataset('test.csv')
+    
+                y = y.reshape(-1) # convert to a vector
+                y_val = y_val.reshape(-1)
+    
+                # set hyperparameters with defaults if not provided
+                hidden_layers = tuple(args.layers) if args.layers else (48, 64)
+                learning_rate = args.learning_rate if args.learning_rate else 0.1
+                epochs = args.epochs if args.epochs else 3000
+                epochs_print = args.epochs_print if args.epochs_print else 1
+    
+                training_history = deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=50, epochs_print=epochs_print)
+                display_plots(training_history)
+    
+            case 'predict':
+                X, y = load_dataset('test.csv')
+                parameters = np.load("model_params.npy", allow_pickle=True).item()
+    
+                predictions, probabilities = predict_and_display(X, y, parameters)
+    
+                # calculate loss
+                loss = binary_cross_entropy(y, probabilities[1, :]) # use the probabilities of the positive class (malignant)
+                print(f"Test Loss using BCE: {loss:.4f}")
+    
+                # confusion matrix
+                cm = confusion_matrix(y.flatten(), predictions.flatten())
+                disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['B', 'M'])
+                disp.plot(cmap='winter')
+                plt.show()
 
-            train.to_csv('datasets/train.csv', index=False)
-            test.to_csv('datasets/test.csv', index=False)
-
-        case 'train':
-            X, y = load_dataset('train.csv')
-            X_val, y_val = load_dataset('test.csv')
-
-            y = y.reshape(-1) # convert to a vector
-            y_val = y_val.reshape(-1)
-
-            # set hyperparameters with defaults if not provided
-            hidden_layers = tuple(args.layers) if args.layers else (48, 64)
-            learning_rate = args.learning_rate if args.learning_rate else 0.1
-            epochs = args.epochs if args.epochs else 3000
-            epochs_print = args.epochs_print if args.epochs_print else 1
-
-            training_history = deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=50, epochs_print=epochs_print)
-            display_plots(training_history)
-
-        case 'predict':
-            X, y = load_dataset('test.csv')
-            parameters = np.load("model_params.npy", allow_pickle=True).item()
-
-            predictions, probabilities = predict_and_display(X, y, parameters)
-
-            # calculate loss
-            loss = binary_cross_entropy(y, probabilities[1, :]) # use the probabilities of the positive class (malignant)
-            print(f"Test Loss using BCE: {loss:.4f}")
-
-            # confusion matrix
-            cm = confusion_matrix(y.flatten(), predictions.flatten())
-            disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['B', 'M'])
-            disp.plot(cmap='winter')
-            plt.show()
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 if __name__== '__main__':
