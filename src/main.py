@@ -11,6 +11,14 @@ from split import data_split
 from train import deep_neural_network
 from predict import predict_and_display, binary_cross_entropy
 
+columns = ['id', 'diagnosis',
+    'mean_radius', 'mean_texture', 'mean_perimeter', 'mean_area', 'mean_smoothness',
+    'mean_compactness', 'mean_concavity', 'mean_concave_points', 'mean_symmetry', 'mean_fractal_dimension',
+    'radius_se', 'texture_se', 'perimeter_se', 'area_se', 'smoothness_se',
+    'compactness_se', 'concavity_se', 'concave_points_se', 'symmetry_se', 'fractal_dimension_se',
+    'worst_radius', 'worst_texture', 'worst_perimeter', 'worst_area', 'worst_smoothness',
+    'worst_compactness', 'worst_concavity', 'worst_concave_points', 'worst_symmetry', 'worst_fractal_dimension']
+
 
 # Initialize and parse command-line arguments.
 def init_parser():
@@ -29,25 +37,6 @@ def init_parser():
     train_parser.add_argument('--epochs_print', type=int)
 
     return parser.parse_args()
-
-
-# Load and normalize the main dataset, assigning column names.
-def data_preparation():
-    # Load dataset and add column names
-    DATA_PATH = Path(__file__).resolve().parent.parent / "data.csv"
-    if not DATA_PATH.exists():
-        raise FileNotFoundError(f"Couldn't find the dataset file: data.csv\n")
-
-    df = pd.read_csv(DATA_PATH, header=None)
-    df.columns = ['id', 'diagnosis',
-        'mean_radius', 'mean_texture', 'mean_perimeter', 'mean_area', 'mean_smoothness',
-        'mean_compactness', 'mean_concavity', 'mean_concave_points', 'mean_symmetry', 'mean_fractal_dimension',
-        'radius_se', 'texture_se', 'perimeter_se', 'area_se', 'smoothness_se',
-        'compactness_se', 'concavity_se', 'concave_points_se', 'symmetry_se', 'fractal_dimension_se',
-        'worst_radius', 'worst_texture', 'worst_perimeter', 'worst_area', 'worst_smoothness',
-        'worst_compactness', 'worst_concavity', 'worst_concave_points', 'worst_symmetry', 'worst_fractal_dimension']
-    
-    return df
 
 
 # Display loss and accuracy plots from the training history.
@@ -79,17 +68,14 @@ def load_dataset(file_name):
     dataset = pd.read_csv(DATA_PATH)
 
     # check if the dataset contains the expected columns if not add them
-    expected_columns = ['id', 'diagnosis',
-        'mean_radius', 'mean_texture', 'mean_perimeter', 'mean_area', 'mean_smoothness',
-        'mean_compactness', 'mean_concavity', 'mean_concave_points', 'mean_symmetry', 'mean_fractal_dimension',
-        'radius_se', 'texture_se', 'perimeter_se', 'area_se', 'smoothness_se',
-        'compactness_se', 'concavity_se', 'concave_points_se', 'symmetry_se', 'fractal_dimension_se',
-        'worst_radius', 'worst_texture', 'worst_perimeter', 'worst_area', 'worst_smoothness',
-        'worst_compactness', 'worst_concavity', 'worst_concave_points', 'worst_symmetry', 'worst_fractal_dimension']
-    
+    expected_columns = columns
     if not all(col in dataset.columns for col in expected_columns):
         dataset.columns = expected_columns
 
+    return dataset
+
+
+def data_preparation(dataset):
     # Standardize the dataset
     for column in dataset.drop(columns=['id', 'diagnosis']).columns:
         dataset[column] = (dataset[column] - dataset[column].mean()) / dataset[column].std()
@@ -109,17 +95,15 @@ def main():
 
         match args.command:
             case 'visualize':
-                df = data_preparation()
-                data_visualization(df)
+                data_visualization(load_dataset('data.csv'))
 
             case 'split':
-                df = data_preparation()
-                data_split(df)
+                data_split(load_dataset('data.csv'))
     
             case 'train':
-                X, y = load_dataset('data_training.csv')
-                X_val, y_val = load_dataset('data_test.csv')
-    
+                X, y = data_preparation(load_dataset('data_training.csv'))
+                X_val, y_val = data_preparation(load_dataset('data_test.csv'))
+
                 y = y.reshape(-1) # convert to a vector
                 y_val = y_val.reshape(-1)
     
@@ -133,7 +117,7 @@ def main():
                 display_plots(training_history)
     
             case 'predict':
-                X, y = load_dataset('data_test.csv')
+                X, y = data_preparation(load_dataset('data_test.csv'))
                 parameters = np.load("model_params.npy", allow_pickle=True).item()
     
                 predictions, probabilities = predict_and_display(X, y, parameters)
@@ -150,26 +134,25 @@ def main():
 
             case 'all':
                 # split
-                df = data_preparation()
-                data_split(df)
+                data_split(load_dataset('data.csv'))
                 
                 # train
-                X, y = load_dataset('data_training.csv')
-                X_val, y_val = load_dataset('data_test.csv')
-    
+                X, y = data_preparation(load_dataset('data_training.csv'))
+                X_val, y_val = data_preparation(load_dataset('data_test.csv'))
+
                 y = y.reshape(-1)
                 y_val = y_val.reshape(-1)
     
-                hidden_layers = (24, 16)
+                hidden_layers = (20, 8)
                 learning_rate = 0.01
-                epochs = 5000
-                epochs_print = 1
+                epochs = 10000
+                epochs_print = 100
     
                 training_history = deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=50, epochs_print=epochs_print)
                 display_plots(training_history)
                 
                 # predict
-                X, y = load_dataset('data_test.csv')
+                X, y = data_preparation(load_dataset('data_test.csv'))
                 parameters = np.load("model_params.npy", allow_pickle=True).item()
     
                 predictions, probabilities = predict_and_display(X, y, parameters)

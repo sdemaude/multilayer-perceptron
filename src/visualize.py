@@ -62,5 +62,5 @@ def pair_plot(df, features):
 
 # Execute the overall visualization routine (Wasserstein and pair plots).
 def data_visualization(df):
-    wasserstein_plot(df.groupby('diagnosis'), df.drop(columns=['diagnosis', 'id']).columns)
+    wasserstein_plot(df.groupby('diagnosis'), df.drop(columns=['id', 'diagnosis']).columns)
     pair_plot(df, df.drop(columns=['id', 'diagnosis']).columns)
