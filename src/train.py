@@ -5,12 +5,11 @@ import numpy as np
 def initialisation(dimensions):  
     parameters = {}
     L = len(dimensions)
-    np.random.seed(1)
 
     # set each parameter to a random value
     for l in range(1, L):
-        parameters['W' + str(l)] = np.random.randn(dimensions[l], dimensions[l - 1])
-        parameters['b' + str(l)] = np.zeros((dimensions[l], 1))
+        parameters['W' + str(l)] = np.random.randn(dimensions[l], dimensions[l-1]) * np.sqrt(1 / dimensions[l-1]) # Xavier initialization
+        parameters['b' + str(l)] = np.random.randn(dimensions[l], 1)
 
     return parameters, L - 1
 
@@ -85,7 +84,7 @@ def sparse_categorical_cross_entropy(y, A):
 # y = Labels (vector)
 # hidden_layers = size of each layer (tuple)
 # X_val, y_val = validation set
-def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=20, min_delta=1e-4, epochs_print=100):
+def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=200, min_delta=1e-4, epochs_print=100):
     n_classes = np.max(y) + 1
     dimensions = list(hidden_layers)
     dimensions.insert(0, X.shape[0])    # set the input layer
@@ -116,6 +115,7 @@ def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val
         training_history[i, 3] = np.mean(np.argmax(val_final_activations, axis=0) == y_val)     # val accuracy
 
         # early stopping
+        '''
         if training_history[i, 1] < best_val_loss - min_delta:
             best_val_loss = training_history[i, 1]
             best_parameters = parameters.copy()
@@ -126,7 +126,7 @@ def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val
                 tqdm.write(f"\n Early stopping triggered at epoch {i}")
                 parameters = best_parameters
                 break
-
+        '''
         # print progress
         if (i + 1) % epochs_print == 0:
             tqdm.write(

@@ -1,7 +1,10 @@
 *.pdf
 *.txt
 *.npy
+evaluation.py
 __pycache__/
 predictions.csv
 test.csv
 train.csv
+data_training.csv
+data_test.csv
