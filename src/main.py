@@ -40,13 +40,16 @@ def init_parser():
 
 
 # Display loss and accuracy plots from the training history.
-def display_plots(training_history):
+def display_plots(training_history, early_stopping_epoch=None):
     plt.figure(figsize=(12, 4))
 
     # Loss plot
     plt.subplot(1, 2, 1)
     plt.plot(training_history[:, 0], label='train loss')
     plt.plot(training_history[:, 1], label='val loss')
+    if early_stopping_epoch is not None:
+        plt.axvline(early_stopping_epoch - 1, color='red', linestyle='--', linewidth=1.5)
+        plt.text(early_stopping_epoch - 1, plt.ylim()[1] * 0.95, 'Early stopping ', color='red', ha='right', va='top')
     plt.legend()
     plt.title("Loss")
 
@@ -54,6 +57,9 @@ def display_plots(training_history):
     plt.subplot(1, 2, 2)
     plt.plot(training_history[:, 2], label='train acc')
     plt.plot(training_history[:, 3], label='val acc')
+    if early_stopping_epoch is not None:
+        plt.axvline(early_stopping_epoch - 1, color='red', linestyle='--', linewidth=1.5)
+        plt.text(early_stopping_epoch - 1, plt.ylim()[1] * 0.95, 'Early stopping ', color='red', ha='right', va='top')
     plt.legend()
     plt.title("Accuracy")
 
@@ -113,8 +119,8 @@ def main():
                 epochs = args.epochs if args.epochs else 5000
                 epochs_print = args.epochs_print if args.epochs_print else 1
     
-                training_history = deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=50, epochs_print=epochs_print)
-                display_plots(training_history)
+                training_history, early_stop_epoch = deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=100, epochs_print=epochs_print)
+                display_plots(training_history, early_stop_epoch)
     
             case 'predict':
                 X, y = data_preparation(load_dataset('data_test.csv'))
@@ -148,8 +154,8 @@ def main():
                 epochs = 10000
                 epochs_print = 100
     
-                training_history = deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=50, epochs_print=epochs_print)
-                display_plots(training_history)
+                training_history, early_stop_epoch = deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=50, epochs_print=epochs_print)
+                display_plots(training_history, early_stop_epoch)
                 
                 # predict
                 X, y = data_preparation(load_dataset('data_test.csv'))

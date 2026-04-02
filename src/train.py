@@ -96,6 +96,7 @@ def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val
     best_val_loss = np.inf
     best_parameters = None
     wait = 0
+    early_stopping_epoch = None
 
     for i in tqdm(range(epochs)):
         # training step
@@ -115,18 +116,17 @@ def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val
         training_history[i, 3] = np.mean(np.argmax(val_final_activations, axis=0) == y_val)     # val accuracy
 
         # early stopping
-        '''
         if training_history[i, 1] < best_val_loss - min_delta:
             best_val_loss = training_history[i, 1]
-            best_parameters = parameters.copy()
+            best_parameters = {k: v.copy() for k, v in parameters.items()}
             wait = 0
         else:
             wait += 1
             if wait >= patience:
-                tqdm.write(f"\n Early stopping triggered at epoch {i}")
+                early_stopping_epoch = i + 1
+                tqdm.write(f"\n Early stopping triggered at epoch {early_stopping_epoch}")
                 parameters = best_parameters
                 break
-        '''
         # print progress
         if (i + 1) % epochs_print == 0:
             tqdm.write(
@@ -141,4 +141,7 @@ def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val
     np.save("training_history.npy", training_history)
     print("Model parameters and training history saved in training_history.npy and model_params.npy")
 
-    return training_history
+    epochs_ran = i + 1
+    training_history = training_history[:epochs_ran]
+
+    return training_history, early_stopping_epoch
