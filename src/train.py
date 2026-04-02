@@ -1,5 +1,7 @@
 from tqdm import tqdm
 import numpy as np
+import pandas as pd
+
 
 # Initialize model parameters randomly for all layers.
 def initialisation(dimensions):  
@@ -79,6 +81,15 @@ def sparse_categorical_cross_entropy(y, A):
     return -np.mean(np.log(A[y, np.arange(m)] + epsilon))
 
 
+# Calculate binary F1 score for predicted labels.
+def f1_score(y_true, y_pred):
+    true_positive = np.sum((y_true == 1) & (y_pred == 1))
+    false_positive = np.sum((y_true == 0) & (y_pred == 1))
+    false_negative = np.sum((y_true == 1) & (y_pred == 0))
+    denominator = 2 * true_positive + false_positive + false_negative
+    return 2 * true_positive / denominator if denominator > 0 else 0.0
+
+
 # Train a deep neural network, managing epochs, validation, and early stopping.
 # X = Features (matrix)
 # y = Labels (vector)
@@ -89,9 +100,9 @@ def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val
     dimensions = list(hidden_layers)
     dimensions.insert(0, X.shape[0])    # set the input layer
     dimensions.append(n_classes)        # set the output layer
-    
+
     parameters, layer_number = initialisation(dimensions)
-    
+
     training_history = np.zeros((int(epochs), 4))
     best_val_loss = np.inf
     best_parameters = None
@@ -105,15 +116,19 @@ def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val
         parameters = update(gradients, parameters, learning_rate, layer_number)
 
         final_activation = activations['A' + str(layer_number)]
+        train_preds = np.argmax(final_activation, axis=0)
         training_history[i, 0] = sparse_categorical_cross_entropy(y, final_activation)  # training loss
-        training_history[i, 2] = np.mean(np.argmax(final_activation, axis=0) == y)      # training accuracy
+        training_history[i, 2] = np.mean(train_preds == y)                            # training accuracy
+        train_f1 = f1_score(y, train_preds)
 
         # validation step
         val_activations = forward_propagation(X_val, parameters, layer_number)
         val_final_activations = val_activations['A' + str(layer_number)]
+        val_preds = np.argmax(val_final_activations, axis=0)
 
         training_history[i, 1] = sparse_categorical_cross_entropy(y_val, val_final_activations) # val loss
-        training_history[i, 3] = np.mean(np.argmax(val_final_activations, axis=0) == y_val)     # val accuracy
+        training_history[i, 3] = np.mean(val_preds == y_val)                                  # val accuracy
+        val_f1 = f1_score(y_val, val_preds)
 
         # early stopping
         if training_history[i, 1] < best_val_loss - min_delta:
@@ -127,6 +142,7 @@ def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val
                 tqdm.write(f"\n Early stopping triggered at epoch {early_stopping_epoch}")
                 parameters = best_parameters
                 break
+
         # print progress
         if (i + 1) % epochs_print == 0:
             tqdm.write(
@@ -134,12 +150,15 @@ def deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val
                 f"Loss: {training_history[i,0]:.4f} - "
                 f"Val Loss: {training_history[i,1]:.4f} - "
                 f"Accuracy: {training_history[i,2]:.4f} - "
-                f"Val Accuracy: {training_history[i,3]:.4f}"
+                f"Val Accuracy: {training_history[i,3]:.4f} - "
+                f"F1: {train_f1:.4f} - "
+                f"Val F1: {val_f1:.4f}"
             )
 
     np.save("model_params.npy", parameters)
-    np.save("training_history.npy", training_history)
-    print("Model parameters and training history saved in training_history.npy and model_params.npy")
+    pd.DataFrame(training_history, columns=['Train Loss', 'Val Loss', 'Train Accuracy', 'Val Accuracy']).to_csv("training_history.csv", index=False)
+
+    print("Model parameters and training history saved in training_history.csv and model_params.npy")
 
     epochs_ran = i + 1
     training_history = training_history[:epochs_ran]

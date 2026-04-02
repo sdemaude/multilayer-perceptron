@@ -8,4 +8,5 @@ test.csv
 train.csv
 data_training.csv
 data_test.csv
+training_history.csv
 todo
