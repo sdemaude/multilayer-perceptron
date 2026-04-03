@@ -8,10 +8,12 @@ def initialisation(dimensions):
     parameters = {}
     L = len(dimensions)
 
-    # set each parameter to a random value
+    np.random.seed(4242)  # for reproducibility
+    # set each parameter to a random value using Xavier Glorot initialization
     for l in range(1, L):
-        parameters['W' + str(l)] = np.random.randn(dimensions[l], dimensions[l-1]) * np.sqrt(1 / dimensions[l-1]) # Xavier initialization
-        parameters['b' + str(l)] = np.random.randn(dimensions[l], 1)
+        scale = np.sqrt(2 / (dimensions[l-1] + dimensions[l]))  # Xavier Glorot
+        parameters['W' + str(l)] = np.random.randn(dimensions[l], dimensions[l-1]) * scale
+        parameters['b' + str(l)] = np.zeros((dimensions[l], 1))  # zeros for biases
 
     return parameters, L - 1
 
