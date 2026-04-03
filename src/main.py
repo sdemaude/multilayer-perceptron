@@ -114,12 +114,12 @@ def main():
                 y_val = y_val.reshape(-1)
     
                 # set hyperparameters with defaults if not provided
-                hidden_layers = tuple(args.layers) if args.layers else (20, 8)
+                hidden_layers = tuple(args.layers) if args.layers else (32, 32)
                 learning_rate = args.learning_rate if args.learning_rate else 0.01
                 epochs = args.epochs if args.epochs else 5000
                 epochs_print = args.epochs_print if args.epochs_print else 1
     
-                training_history, early_stop_epoch = deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=100, epochs_print=epochs_print)
+                training_history, early_stop_epoch = deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=500, epochs_print=epochs_print)
                 display_plots(training_history, early_stop_epoch)
     
             case 'predict':
@@ -149,12 +149,12 @@ def main():
                 y = y.reshape(-1)
                 y_val = y_val.reshape(-1)
     
-                hidden_layers = (20, 8)
+                hidden_layers = (32, 32)
                 learning_rate = 0.01
                 epochs = 10000
                 epochs_print = 100
     
-                training_history, early_stop_epoch = deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=50, epochs_print=epochs_print)
+                training_history, early_stop_epoch = deep_neural_network(X, y, hidden_layers, learning_rate, epochs, X_val, y_val, patience=500, epochs_print=epochs_print)
                 display_plots(training_history, early_stop_epoch)
                 
                 # predict
