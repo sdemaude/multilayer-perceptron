@@ -1,31 +1,19 @@
 # Multilayer Perceptron | Neural Networks
 
-A machine learning project focused on understanding and implementing a Multilayer Perceptron (MLP), a type of artificial neural network used for classification tasks.
+A machine learning project focused on implementing a Multilayer Perceptron (MLP) neural network in Python. The project explores the fundamental mechanisms behind neural networks, including feedforward propagation, backpropagation and gradient descent.
 
 ## Overview
 
-The project explores the fundamentals of neural networks, from their architecture to the training process.
+A Multilayer Perceptron is a type of artificial neural network composed of interconnected layers of neurons. It learns patterns from data by adjusting its weights and biases during training.
 
-A Multilayer Perceptron consists of interconnected layers of artificial neurons that learn patterns from data through an iterative training process.
+This project focuses on understanding and implementing the core mechanisms that allow a neural network to learn from a dataset.
 
-The main objectives are to:
+The main components include:
 
-- Understand the architecture of a neural network.
-- Explore how information propagates through multiple layers.
-- Implement the learning process using backpropagation.
-- Train a model to perform classification.
-- Evaluate the model's predictions and performance.
-
-## Key Concepts
-
-- Artificial Neural Networks (ANN)
-- Multilayer Perceptron (MLP)
-- Forward Propagation
-- Backpropagation
-- Gradient Descent
-- Activation Functions
-- Model Training and Evaluation
-- Classification
+- **Feedforward Propagation:** Pass input data through the network to compute predictions.
+- **Backpropagation:** Calculate gradients to determine how network parameters should be adjusted.
+- **Gradient Descent:** Update weights and biases to minimize the prediction error.
+- **Training:** Iteratively optimize the network using the provided dataset.
 
 ## Project Structure
 
@@ -36,9 +24,20 @@ multilayer-perceptron/
 └── pyproject.toml
 ```
 
+## Key Concepts
+
+- Artificial Neural Networks (ANN)
+- Multilayer Perceptron (MLP)
+- Feedforward Propagation
+- Backpropagation
+- Gradient Descent
+- Weights and Biases Optimization
+- Machine Learning Fundamentals
+
 ## Technologies
 
-- Python 3.10+
+- Python
+- NumPy
 - Pandas
 - Matplotlib
 - SciPy
@@ -62,8 +61,8 @@ pip install .
 
 ## Learning Objectives
 
-- Understand the mathematical foundations of artificial neural networks.
-- Explore the internal mechanisms of a Multilayer Perceptron.
-- Understand forward propagation and backpropagation.
-- Apply optimization techniques to train a neural network.
-- Develop a better understanding of machine learning classification models.
+- Understand the architecture and mathematical foundations of neural networks.
+- Implement feedforward propagation and backpropagation.
+- Understand how gradient descent optimizes network parameters.
+- Explore the relationship between weights, biases and predictions.
+- Gain practical experience with the fundamentals of neural network training.
